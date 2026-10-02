@@ -34,4 +34,4 @@ Requiere Rust y `cmake` (para compilar Raylib).
 cargo run
 ```
 
-Genera `out.png` (800x600) con el modelo renderizado.
+Genera `out.png` (800x600) con el modelo renderizado y lo muestra en una ventana hasta cerrarla.

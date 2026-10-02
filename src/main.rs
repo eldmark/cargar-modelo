@@ -44,5 +44,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     framebuffer.render_to_file("out.png");
+
+    // show the framebuffer until the window is closed
+    let (mut rl, thread) = raylib::init()
+        .size(WIDTH as i32, HEIGHT as i32)
+        .title("Modelo OBJ")
+        .build();
+    let texture = rl.load_texture_from_image(&thread, &framebuffer.color_buffer)?;
+
+    while !rl.window_should_close() {
+        let mut d = rl.begin_drawing(&thread);
+        d.clear_background(Color::BLACK);
+        d.draw_texture(&texture, 0, 0, Color::WHITE);
+    }
     Ok(())
 }
