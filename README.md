@@ -136,7 +136,48 @@ que cada uno hace cuentas distintas y el error de redondeo cae de distinto lado.
 
 ## Perfil
 
-<!-- PERFIL -->
+```
+CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph -- --benchmark-triangles
+```
+
+`CARGO_PROFILE_RELEASE_DEBUG=true` deja los símbolos de depuración en el build
+optimizado, así el flamegraph muestra los nombres de las funciones (incluso las
+que el compilador metió inline). El perfil cubre la corrida completa del
+benchmark, o sea los tres modos juntos.
+
+[![Flamegraph](flamegraph.svg)](flamegraph.svg)
+
+(Al abrir `flamegraph.svg` en el navegador se puede hacer clic en los bloques y
+buscar funciones.)
+
+Lo que ocupa cada parte del total de muestras:
+
+| Función | % de muestras |
+|---|---:|
+| `triangle_barycentric` | 64.5 % |
+| ↳ `covers` (la prueba de cada arista) | 21.0 % |
+| ↳ `Vec::push` | 5.0 % |
+| ↳ `edge` | 4.4 % |
+| `triangle_scanline` | 16.6 % |
+| ↳ `Vec::push` | 3.8 % |
+| `Vec::extend` dentro de `rasterize` (copiar fragmentos) | 14.4 % |
+| Crecimiento del `Vec` (`realloc`) | 2.1 % |
+| `line` (wireframe) | 1.5 % |
+
+En el baricéntrico casi todo el tiempo se va en los cálculos geométricos: las
+funciones de arista y `covers`, que se evalúan para todos los píxeles del
+rectángulo, estén adentro o no. Crear los fragmentos (`push`) es una parte
+pequeña. En scanline pasa lo contrario, la geometría casi no aparece
+(`cross_at` es el 0.1 %) porque solo se calcula dos veces por fila, y lo que
+pesa es el ciclo que recorre los píxeles y guarda los fragmentos.
+
+Lo que más me sorprendió es `extend`: el 14 % del tiempo se va en copiar los
+fragmentos del `Vec` de cada triángulo al `Vec` total en `rasterize`, y otro 2 %
+en hacer crecer ese `Vec`. Eso no tiene nada que ver con el algoritmo de
+relleno, es solo mover memoria. Se podría quitar si cada función de triángulo
+escribiera directo en un solo `Vec` que se le pase por referencia, pero lo dejé
+así para respetar la estructura de la lección, donde `triangle` devuelve su
+propio `Vec<Fragment>`.
 
 ## Ejecutar
 
