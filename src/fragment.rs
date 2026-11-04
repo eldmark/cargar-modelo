@@ -1,0 +1,18 @@
+use raylib::prelude::*;
+
+pub struct Fragment {
+    pub position: Vector2,
+    pub color: Vector3,
+    #[allow(dead_code)] // for the depth test in later labs
+    pub depth: f32,
+}
+
+impl Fragment {
+    pub fn new(x: f32, y: f32, color: Vector3, depth: f32) -> Self {
+        Fragment {
+            position: Vector2::new(x, y),
+            color,
+            depth,
+        }
+    }
+}

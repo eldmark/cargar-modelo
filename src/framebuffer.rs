@@ -5,7 +5,6 @@ pub struct Framebuffer {
     pub height: u32,
     pub color_buffer: Image,
     background_color: Color,
-    current_color: Color,
 }
 
 impl Framebuffer {
@@ -16,7 +15,6 @@ impl Framebuffer {
             height,
             color_buffer,
             background_color,
-            current_color: Color::WHITE,
         }
     }
 
@@ -28,15 +26,13 @@ impl Framebuffer {
         );
     }
 
-    pub fn set_pixel(&mut self, x: u32, y: u32) {
-        if x < self.width && y < self.height {
-            self.color_buffer
-                .draw_pixel(x as i32, y as i32, self.current_color);
+    /// Writes `color` (RGB in 0.0..=1.0) at (x, y); positions outside the image are ignored.
+    pub fn point(&mut self, x: i32, y: i32, color: Vector3) {
+        if x >= 0 && y >= 0 && (x as u32) < self.width && (y as u32) < self.height {
+            let to_u8 = |c: f32| (c.clamp(0.0, 1.0) * 255.0).round() as u8;
+            let color = Color::new(to_u8(color.x), to_u8(color.y), to_u8(color.z), 255);
+            self.color_buffer.draw_pixel(x, y, color);
         }
-    }
-
-    pub fn set_current_color(&mut self, color: Color) {
-        self.current_color = color;
     }
 
     pub fn render_to_file(&self, file_path: &str) {
